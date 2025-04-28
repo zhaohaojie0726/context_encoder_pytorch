@@ -13,7 +13,7 @@ for i in range(1,101):
     img=cv2.resize(img,(128,128),interpolation=cv2.INTER_CUBIC)
     dst = cv2.inpaint(img,mask,3,cv2.INPAINT_NS)
     p = p+psnr(img[32:32+64,32:32+64,:].astype(np.float32),dst[32:32+64,32:32+64,:].astype(np.float32))
-    cv2.imwrite('result/test/old_all/%03d_im.png'%i,dst)
+    cv2.imwrite('result/old_all/%03d_im.png'%i,dst)
     t = img[32:32+64,32:32+64,:].astype(np.float32)/127.5-dst[32:32+64,32:32+64,:].astype(np.float32)/127.5
     l2 = l2 + np.mean(np.square(t))
     t = np.abs(t)

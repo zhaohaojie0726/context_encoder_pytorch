@@ -21,7 +21,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--dataset',  default='streetview', help='cifar10 | lsun | imagenet | folder | lfw ')
 parser.add_argument('--dataroot',  default='dataset/val', help='path to dataset')
 parser.add_argument('--workers', type=int, help='number of data loading workers', default=2)
-parser.add_argument('--batchSize', type=int, default=64, help='input batch size')
+parser.add_argument('--batchSize', type=int, default=100, help='input batch size')
 parser.add_argument('--imageSize', type=int, default=128, help='the height / width of the input image to network')
 parser.add_argument('--nz', type=int, default=100, help='size of the latent z vector')
 parser.add_argument('--ngf', type=int, default=64)
@@ -32,8 +32,8 @@ parser.add_argument('--lr', type=float, default=0.0002, help='learning rate, def
 parser.add_argument('--beta1', type=float, default=0.5, help='beta1 for adam. default=0.5')
 parser.add_argument('--cuda', action='store_true', help='enables cuda')
 parser.add_argument('--ngpu', type=int, default=1, help='number of GPUs to use')
-parser.add_argument('--netG', default='', help="path to netG (to continue training)")
-parser.add_argument('--netD', default='', help="path to netD (to continue training)")
+parser.add_argument('--netG', default='model/netG_streetview.pth', help="path to netG (to continue training)")
+parser.add_argument('--netD', default='model/netlocalD.pth', help="path to netD (to continue training)")
 parser.add_argument('--outf', default='.', help='folder to output images and model checkpoints')
 parser.add_argument('--manualSeed', type=int, help='manual seed')
 
@@ -49,7 +49,7 @@ netG = _netG(opt)
 netG.load_state_dict(torch.load(opt.netG,map_location=lambda storage, location: storage)['state_dict'])
 netG.eval()
 
-transform = transforms.Compose([transforms.Scale(opt.imageSize),
+transform = transforms.Compose([transforms.Resize(opt.imageSize),
                                     transforms.CenterCrop(opt.imageSize),
                                     transforms.ToTensor(),
                                     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
@@ -59,9 +59,9 @@ dataloader = torch.utils.data.DataLoader(dataset, batch_size=opt.batchSize,
                                          shuffle=True, num_workers=int(opt.workers))
 
 
-input_real = torch.FloatTensor(opt.batchSize, 3, opt.imageSize, opt.imageSize)
-input_cropped = torch.FloatTensor(opt.batchSize, 3, opt.imageSize, opt.imageSize)
-real_center = torch.FloatTensor(opt.batchSize, 3, opt.imageSize/2, opt.imageSize/2)
+input_real = torch.Tensor(opt.batchSize, 3, opt.imageSize, opt.imageSize)
+input_cropped = torch.Tensor(opt.batchSize, 3, opt.imageSize, opt.imageSize)
+real_center = torch.Tensor(opt.batchSize, 3, opt.imageSize/2, opt.imageSize/2)
 
 criterionMSE = nn.MSELoss()
 
@@ -93,9 +93,9 @@ errG = criterionMSE(fake,real_center)
 recon_image = input_cropped.clone()
 recon_image.data[:,:,opt.imageSize/4:opt.imageSize/4+opt.imageSize/2,opt.imageSize/4:opt.imageSize/4+opt.imageSize/2] = fake.data
 
-vutils.save_image(real_cpu,'val_real_samples.png',normalize=True)
-vutils.save_image(input_cropped.data,'val_cropped_samples.png',normalize=True)
-vutils.save_image(recon_image.data,'val_recon_samples.png',normalize=True)
+vutils.save_image(real_cpu,'result/val_real_samples.png', normalize=True, nrow= 10)
+vutils.save_image(input_cropped.data,'result/val_cropped_samples.png', normalize=True, nrow= 10)
+vutils.save_image(recon_image.data,'result/val_recon_samples.png', normalize=True, nrow= 10)
 p=0
 l1=0
 l2=0

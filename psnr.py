@@ -1,6 +1,6 @@
 import numpy
 import math
-import scipy.misc
+# import scipy.misc
 
 
 def psnr(img1, img2):
